@@ -65,7 +65,7 @@
                         echo "<td>".$user_data['cep']."</td>";
                         echo "<td>".$user_data['uf']."</td>";
                         echo "<td>".$user_data['fone']."</td>";
-                        echo "</tr>";
+                        echo "</tr>";      
                     }
                 ?>
             </tbody>

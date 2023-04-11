@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
 
+html, body {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
 body {
     margin: 0;
     font-family: 'Noto Sans', sans-serif;
@@ -8,6 +13,15 @@ body {
 body * {
     box-sizing: border-box;
     
+}
+
+.message {
+    background: rgba(255, 0, 0, 70%);
+    border: 3px solid #DC143C;
+    padding: 1rem;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
 }
 
 .main {

@@ -31,7 +31,10 @@
                 header("Location: painel.php");
             
            } else {
-            echo "Falha ao logar! Email ou senha incorretos";
+            echo "<div class='message'>
+                Falha ao logar! Email ou senha incorretos
+            </div>";
+            //echo "Falha ao logar! Email ou senha incorretos";
            }
         }
     }
@@ -41,7 +44,8 @@
 <html lang="pt-Br">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="./css/i.css">
+    <link rel="stylesheet" href="./css/index.css">
+    
     <title>Login</title>
 </head>
 <body>
@@ -56,7 +60,7 @@
                     <h1>LOGIN</h1>
 
                     <div class="textfield">
-                        <label for="cnpj">Email</label>
+                        <label for="cnpj">CNPJ</label>
                         <input type="text" name="cnpj" placeholder="CNPJ" id="cnpj">
                     </div>
 
