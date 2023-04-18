@@ -36,10 +36,10 @@
         </div>
     </header>
 
-    <main class="main-painel">
+    <main class="main">
         <section class="menu">
-            <a class="ativo" href="painel.php">Empresas ativas</a>
-            <a href="empresas_inativas.php">Empresas inativas</a>
+            <a href="painel.php">Empresas ativas</a>
+            <a class="ativo" href="empresas_inativas.php">Empresas inativas</a>
             <a href="empresas_bloqueadas.php">Empresas bloqueadas</a>
             <a href="empresas_isentas.php">Empresas isentas</a>
         </section>
@@ -61,19 +61,16 @@
             <tbody>
                 <?php
                     while($user_data = mysqli_fetch_assoc($result)){
-                        if($user_data['bloqueado'] == "N") {
-                            echo "<tr>";
-                            echo "<td>".$user_data['cnpj']."</td>";
-                            echo "<td>".$user_data['razao']."</td>";
-                            echo "<td>".$user_data['endereco']."</td>";
-                            echo "<td>".$user_data['cidade']."</td>";
-                            echo "<td>".$user_data['bairro']."</td>";
-                            echo "<td>".$user_data['cep']."</td>";
-                            echo "<td>".$user_data['uf']."</td>";
-                            echo "<td>".$user_data['fone']."</td>";
-                            echo "</tr>";  
-                        }
-                            
+                        echo "<tr>";
+                        echo "<td>".$user_data['cnpj']."</td>";
+                        echo "<td>".$user_data['razao']."</td>";
+                        echo "<td>".$user_data['endereco']."</td>";
+                        echo "<td>".$user_data['cidade']."</td>";
+                        echo "<td>".$user_data['bairro']."</td>";
+                        echo "<td>".$user_data['cep']."</td>";
+                        echo "<td>".$user_data['uf']."</td>";
+                        echo "<td>".$user_data['fone']."</td>";
+                        echo "</tr>";      
                     }
                 ?>
             </tbody>
