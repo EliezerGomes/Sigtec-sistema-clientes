@@ -2,9 +2,7 @@
     include('app/protect.php');
     include('app/conexao.php');
 
-    //Busca no banco de dados para exibir na tabela
     $emp = $_SESSION['id'];
-    
     if(!empty($_GET['busca'])){
         $data = $_GET['busca'];
         $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND razao LIKE '%$data%' OR cnpj LIKE '%$data%' ORDER BY codigo DESC";
@@ -12,7 +10,6 @@
         $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
     }
     $result = $mysqli->query($empresas);
-
 
     $men = "SELECT r.NOME, count(e.razao) as RAZAO, sum(r.MENSALIDADE) AS MENSALIDADE, sum(r.PRECO_SUGERIDO) AS BRUTO_APROX, (SUM(r.PRECO_SUGERIDO) - sum(r.MENSALIDADE)) AS LIQUIDO_APROX  FROM empresa e
     INNER JOIN revenda r
@@ -29,8 +26,6 @@
     <link rel="stylesheet" href="./css/painel.css">
     <title>Painel</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
-
 </head>
 <body>
     <header>
@@ -50,18 +45,21 @@
     <main class="main">
         <section>
             <div class="menu">
-                <a class="ativo" href="painel.php">Empresas ativas</a>
+                <a href="painel.php">Empresas ativas</a>
                 <!-- <a href="empresas_inativas.php">Empresas inativas</a> -->
                 <a href="empresas_bloqueadas.php">Empresas bloqueadas</a>
                 <a href="empresas_isentas.php">Empresas isentas</a>
-                <a href="empresas_vencidas.php">Empresas vencidas</a>
+                <a class="ativo" href="empresas_vencidas.php">Empresas vencidas</a>
             </div>
 
             <div class="busca">
                 <input type="search" placeholder="Buscar" id="busca">
-                <button onclick="gerarPdf()"> <img class="pdf" src="./images/pdf.png" alt="PDF"></button>
-            </div>
-            
+                <!-- <button onclick="searchData()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                </button> -->
+            </div>  
         </section>
 
         <table>
@@ -75,17 +73,16 @@
                     <th>Cep</th>
                     <th>UF</th>
                     <th>Fone</th>
-                    <th>Ações</th>
                 </tr>
             </thead>
             
             <tbody class="tabela" id="result">
-                
                 <?php
                     $var = mysqli_fetch_assoc($result);
-                    if($var['bloqueado'] == "N"){
+                    $vencimento = $var['validade_licenca'];
+                    $hoje = date('Y-m-d');
+                    if (strtotime($hoje) > strtotime($vencimento)) {
                         while($user_data = mysqli_fetch_assoc($result)){
-                            $cod = $user_data['codigo'];
                             echo "<tr>";
                             echo "<td>".$user_data['cnpj']."</td>";
                             echo "<td>".$user_data['razao']."</td>";
@@ -95,12 +92,11 @@
                             echo "<td>".$user_data['cep']."</td>";
                             echo "<td>".$user_data['uf']."</td>";
                             echo "<td>".$user_data['fone']."</td>";
-                            echo "<td class='edit'><button onclick='editarUsuario($cod)' id=".$cod." ><img src='./images/lapis.svg' alt='lapis'></button></td>";
-                            echo "</tr>";  
-                        }     
+                            echo "</tr>"; 
+                        } 
                     } else {
                         echo "<tr>";
-                        echo "<td colspan=9 style='text-align: center;'> Nenhum registro encontrado!</td>";
+                        echo "<td colspan=8 style='text-align: center;'>Nenhum registro encontrado!</td>";
                         echo "</tr>";
                     }
                 ?>
@@ -109,13 +105,9 @@
         </table>
     </main>
 
-    <div id="modal">
-        
-    </div>
-
-    <footer>
+    <!-- <footer>
         <h2>Resumo</h2>
-    
+
         <table>
             <thead>
                 <tr>
@@ -141,43 +133,17 @@
                 ?>
             </tbody>
         </table>
-    </footer>
+    </footer> -->
 </body>
 
 <script>
-    //Logico para busca automatica
     $("#busca").keyup(function() {
         var busca = $("#busca").val()
-        $.post('./busca/busca_painel.php', {busca: busca}, function(data) {
+        $.post('./busca/busca_vencidas.php', {busca: busca}, function(data) {
             $("#result").html(data)
         })
+
     })
-
-    //Logica para editar informações
-    async function editarUsuario(cod, e) {
-        var modal = document.getElementById("modal")
-        var display = modal.style.display;
-        if(modal.style.display === "none" || modal.style.display === ""){ 
-            modal.style.display = "flex"
-
-            $.post("edit.php", {display: display, cod: cod}, function(data){
-            $("#modal").html(data)
-        })
-        } 
-    }
-
-    //Fecha painel de editar
-    function fechaModal() {
-        var modal = document.getElementById("modal")
-        if(modal.style.display === "flex"){
-            modal.style.display = "none"
-        }
-    }
-
-    //Gerar Pdf
-    function gerarPdf() {
-        window.location.href= "gerarPdf.php"
-    }
-
 </script>
+
 </html>
