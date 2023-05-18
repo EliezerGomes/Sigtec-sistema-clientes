@@ -3,7 +3,7 @@
         'name' => 'htdocs/sigtec',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'bd1073033457c97204ac0486ebee22e1eae160ac',
+        'reference' => '6a4c12af9b60755f3d2e58a5b2bd6239aeecd969',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'htdocs/sigtec' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'bd1073033457c97204ac0486ebee22e1eae160ac',
+            'reference' => '6a4c12af9b60755f3d2e58a5b2bd6239aeecd969',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -3,12 +3,7 @@
     include('app/conexao.php');
 
     $emp = $_SESSION['id'];
-    if(!empty($_GET['busca'])){
-        $data = $_GET['busca'];
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND razao LIKE '%$data%' OR cnpj LIKE '%$data%' ORDER BY codigo DESC";
-    } else {
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
-    }
+    $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
     $result = $mysqli->query($empresas);
 
     $men = "SELECT r.NOME, count(e.razao) as RAZAO, sum(r.MENSALIDADE) AS MENSALIDADE, sum(r.PRECO_SUGERIDO) AS BRUTO_APROX, (SUM(r.PRECO_SUGERIDO) - sum(r.MENSALIDADE)) AS LIQUIDO_APROX  FROM empresa e

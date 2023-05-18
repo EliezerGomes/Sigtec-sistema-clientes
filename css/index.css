@@ -57,7 +57,6 @@ body * {
     align-items: center;
     flex-direction: column;
     background: #FFF;
-    border-radius: 10px;
 }
 
 .left-container > h1 {

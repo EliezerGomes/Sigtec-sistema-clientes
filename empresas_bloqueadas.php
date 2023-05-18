@@ -3,12 +3,7 @@
     include('app/conexao.php');
 
     $emp = $_SESSION['id'];
-    if(!empty($_GET['busca'])){
-        $data = $_GET['busca'];
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND razao LIKE '%$data%' OR cnpj LIKE '%$data%' ORDER BY codigo DESC";
-    } else {
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
-    }
+    $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND bloqueado = 'S' ORDER BY codigo DESC";
     $result = $mysqli->query($empresas);
 
     $men = "SELECT r.NOME, count(e.razao) as RAZAO, sum(r.MENSALIDADE) AS MENSALIDADE, sum(r.PRECO_SUGERIDO) AS BRUTO_APROX, (SUM(r.PRECO_SUGERIDO) - sum(r.MENSALIDADE)) AS LIQUIDO_APROX  FROM empresa e
@@ -78,9 +73,11 @@
             
             <tbody class="tabela" id="result">
                 <?php
-                    $var = mysqli_fetch_assoc($result);
-                    if($var['bloqueado'] == "S") {
-                        while($user_data = mysqli_fetch_assoc($result)){
+                    $num = $result->num_rows;
+                    if($num > 0) {
+                    $executou = true;
+                    while($user_data = mysqli_fetch_assoc($result) AND $executou){
+                        if($user_data['bloqueado'] == "S") {
                             echo "<tr>";
                             echo "<td>".$user_data['cnpj']."</td>";
                             echo "<td>".$user_data['razao']."</td>";
@@ -90,13 +87,19 @@
                             echo "<td>".$user_data['cep']."</td>";
                             echo "<td>".$user_data['uf']."</td>";
                             echo "<td>".$user_data['fone']."</td>";
-                            echo "</tr>";        
+                            echo "</tr>"; 
+                        } //else {
+                        //     echo "<tr>";
+                        //     echo "<td colspan=8 style='text-align: center;'> Nenhum usuário encontrado! </td>";
+                        //     echo "</tr>";
+                        //     $executou = false;
+                        // }      
                     }
-                }  else {
+                } else {
                     echo "<tr>";
-                    echo "<td colspan=8 style='text-align: center;'> Nenhum usuário encontrado! </td>";
+                    echo "<td colspan=8 style='text-align: center;'> Nenhum registro encontrado! </td>";
                     echo "</tr>";
-                }
+                }   
                 ?>
             </tbody>
             

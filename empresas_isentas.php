@@ -3,12 +3,7 @@
     include('app/conexao.php');
 
     $emp = $_SESSION['id'];
-    if(!empty($_GET['busca'])){
-        $data = $_GET['busca'];
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND razao LIKE '%$data%' OR cnpj LIKE '%$data%' ORDER BY codigo DESC";
-    } else {
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
-    }
+    $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND isento = '1' ORDER BY codigo DESC";
     $result = $mysqli->query($empresas);
 
     $men = "SELECT r.NOME, count(e.razao) as RAZAO, sum(r.MENSALIDADE) AS MENSALIDADE, sum(r.PRECO_SUGERIDO) AS BRUTO_APROX, (SUM(r.PRECO_SUGERIDO) - sum(r.MENSALIDADE)) AS LIQUIDO_APROX  FROM empresa e
@@ -77,10 +72,13 @@
             </thead>
             
             <tbody class="tabela" id="result">
-                <?php
-                    $var = mysqli_fetch_assoc($result);
-                    if($var['isento'] == 1){
-                        while($user_data = mysqli_fetch_assoc($result)){
+                <?php  
+                    $num = $result->num_rows;
+                    if($num > 0) {
+                        $executou = true;
+                        while($user_data = mysqli_fetch_assoc($result) AND $executou){
+                            if($user_data['isento'] == '1' && $user_data['bloqueado'] == 'N'){
+                                $cod = $user_data['codigo'];
                                 echo "<tr>";
                                 echo "<td>".$user_data['cnpj']."</td>";
                                 echo "<td>".$user_data['razao']."</td>";
@@ -91,7 +89,14 @@
                                 echo "<td>".$user_data['uf']."</td>";
                                 echo "<td>".$user_data['fone']."</td>";
                                 echo "</tr>";
-                    } 
+                            } //else {
+                            //     echo "entrou no else";
+                            //     echo "<tr>";
+                            //     echo "<td colspan=8 style='text-align: center;'>Nenhum registro encontrado!</td>";
+                            //     echo "</tr>";
+                            //     $executou = false;
+                            // }
+                        }  
                     } else {
                         echo "<tr>";
                         echo "<td colspan=8 style='text-align: center;'>Nenhum registro encontrado!</td>";

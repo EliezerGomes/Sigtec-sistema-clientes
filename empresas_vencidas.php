@@ -3,12 +3,8 @@
     include('app/conexao.php');
 
     $emp = $_SESSION['id'];
-    if(!empty($_GET['busca'])){
-        $data = $_GET['busca'];
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND razao LIKE '%$data%' OR cnpj LIKE '%$data%' ORDER BY codigo DESC";
-    } else {
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
-    }
+    $h = date("Y-m-d");
+    $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND validade_licenca < '$h' ORDER BY codigo DESC";
     $result = $mysqli->query($empresas);
 
     $men = "SELECT r.NOME, count(e.razao) as RAZAO, sum(r.MENSALIDADE) AS MENSALIDADE, sum(r.PRECO_SUGERIDO) AS BRUTO_APROX, (SUM(r.PRECO_SUGERIDO) - sum(r.MENSALIDADE)) AS LIQUIDO_APROX  FROM empresa e
@@ -78,22 +74,29 @@
             
             <tbody class="tabela" id="result">
                 <?php
-                    $var = mysqli_fetch_assoc($result);
-                    $vencimento = $var['validade_licenca'];
-                    $hoje = date('Y-m-d');
-                    if (strtotime($hoje) > strtotime($vencimento)) {
+                    $num = $result->num_rows;
+                    if($num > 0) {
+                        $hoje = date("Y-m-d");
                         while($user_data = mysqli_fetch_assoc($result)){
-                            echo "<tr>";
-                            echo "<td>".$user_data['cnpj']."</td>";
-                            echo "<td>".$user_data['razao']."</td>";
-                            echo "<td>".$user_data['endereco']."</td>";
-                            echo "<td>".$user_data['cidade']."</td>";
-                            echo "<td>".$user_data['bairro']."</td>";
-                            echo "<td>".$user_data['cep']."</td>";
-                            echo "<td>".$user_data['uf']."</td>";
-                            echo "<td>".$user_data['fone']."</td>";
-                            echo "</tr>"; 
-                        } 
+                            $vencimento = $user_data['validade_licenca'];
+                            if (strtotime($hoje) > strtotime($vencimento)) {
+                                echo "<tr>";
+                                echo "<td>".$user_data['cnpj']."</td>";
+                                echo "<td>".$user_data['razao']."</td>";
+                                echo "<td>".$user_data['endereco']."</td>";
+                                echo "<td>".$user_data['cidade']."</td>";
+                                echo "<td>".$user_data['bairro']."</td>";
+                                echo "<td>".$user_data['cep']."</td>";
+                                echo "<td>".$user_data['uf']."</td>";
+                                echo "<td>".$user_data['fone']."</td>";
+                                echo "</tr>"; 
+                            // } else {
+                            //     echo "<tr>";
+                            //     echo "<td colspan=8 style='text-align: center;'>Nenhum registro encontrado!</td>";
+                            //     echo "</tr>";
+                            //     $executou = false;
+                            // }
+                        } }
                     } else {
                         echo "<tr>";
                         echo "<td colspan=8 style='text-align: center;'>Nenhum registro encontrado!</td>";

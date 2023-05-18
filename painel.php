@@ -2,15 +2,20 @@
     include('app/protect.php');
     include('app/conexao.php');
 
-    //Busca no banco de dados para exibir na tabela
-    $emp = $_SESSION['id'];
-    
-    if(!empty($_GET['busca'])){
-        $data = $_GET['busca'];
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND razao LIKE '%$data%' OR cnpj LIKE '%$data%' ORDER BY codigo DESC";
-    } else {
-        $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
+    if(!isset($_SESSION)) {
+        session_start();
     }
+    //Busca no banco de dados para exibir na tabela
+    if(isset($_SESSION['sucesso'])){
+        $sucesso = $_SESSION['sucesso'];
+    }
+
+    if(isset($_SESSION['suspenso'])){
+        $suspenso = $_SESSION['suspenso'];
+    }
+
+    $emp = $_SESSION['id'];
+    $empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND bloqueado = 'N' AND isento = '0' ORDER BY codigo DESC";
     $result = $mysqli->query($empresas);
 
 
@@ -35,19 +40,53 @@
 <body>
     <header>
         <div>
+            
             <img src="./images/logo_horizontal.png" alt="">
             <h3>Bem vindo, <?php echo $_SESSION['nome']; ?></h3>
         </div>
 
         <div>
             <a href="logout.php">
-                <img src="./images/box-arrow-right.svg" alt="">
+                <!-- <img src="./images/box-arrow-right.svg" alt=""> -->
                 Sair
             </a>
         </div>
     </header>
 
     <main class="main">
+        <?php 
+            if(isset($sucesso)){
+                if($sucesso == "true"){
+                    echo "<h4 id='msg' style='background: #00FF7F; width: 100vw; heiht: 10vh; margin-top: -10px; text-align: center;'>Data de vencimento alterado com sucesso</h4>";
+                    $_SESSION['sucesso'] = "";
+                } else if($sucesso == "false"){
+                    echo "<h4 id='msg' style='background: #FA8072; width: 100vw; heiht: 10vh; margin-top: -10px; text-align: center;'>Erro ao alterar data de vencimento! Data inserida é menor que a data atual</h4>";
+                    $_SESSION['sucesso'] = "";
+                }
+            }
+
+            //
+
+            if(isset($suspenso) == "true"){
+                $hoje = date("Y-m-d");
+                if(isset($_GET['cod'])){
+                    $cod = $_GET['cod'];
+                    $pegarData = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND bloqueado = 'N' AND isento = '0' AND codigo = '$cod'";
+                    $dates = $mysqli->query($pegarData);
+                    $data = mysqli_fetch_assoc($dates);
+                    //calcular data
+                    $suspensao = $data['suspensao'];
+                    $time1 = strtotime($hoje);
+                    $time2 = strtotime($suspensao);
+                    $diferença_segundos = $time2 - $time1;
+                    $dias = $diferença_segundos / (60 * 60 * 24);
+                    if($suspenso == "true"){
+                        echo "<h4 id='msg' style='background: #F4A460; width: 100vw; heiht: 10vh; margin-top: -10px; text-align: center;'>O sistema será suspenso em ".$dias." dia(s)</h4>";
+                        $_SESSION['suspenso'] = "";
+                    }
+                } 
+            } 
+        ?>
         <section>
             <div class="menu">
                 <a class="ativo" href="painel.php">Empresas ativas</a>
@@ -82,27 +121,37 @@
             <tbody class="tabela" id="result">
                 
                 <?php
-                    $var = mysqli_fetch_assoc($result);
-                    if($var['bloqueado'] == "N"){
-                        while($user_data = mysqli_fetch_assoc($result)){
-                            $cod = $user_data['codigo'];
-                            echo "<tr>";
-                            echo "<td>".$user_data['cnpj']."</td>";
-                            echo "<td>".$user_data['razao']."</td>";
-                            echo "<td>".$user_data['endereco']."</td>";
-                            echo "<td>".$user_data['cidade']."</td>";
-                            echo "<td>".$user_data['bairro']."</td>";
-                            echo "<td>".$user_data['cep']."</td>";
-                            echo "<td>".$user_data['uf']."</td>";
-                            echo "<td>".$user_data['fone']."</td>";
-                            echo "<td class='edit'><button onclick='editarUsuario($cod)' id=".$cod." ><img src='./images/lapis.svg' alt='lapis'></button></td>";
-                            echo "</tr>";  
-                        }     
-                    } else {
+                    $num = $result->num_rows;
+                    if($num > 0) {
+                        $executou = true;
+                        while($user_data = mysqli_fetch_assoc($result) AND $executou){
+                            if($user_data['bloqueado'] == "N" && $user_data['isento'] == '0'){
+                                $cod = $user_data['codigo'];
+                                echo "<tr>";
+                                echo "<td>".$user_data['cnpj']."</td>";
+                                echo "<td>".$user_data['razao']."</td>";
+                                echo "<td>".$user_data['endereco']."</td>";
+                                echo "<td>".$user_data['cidade']."</td>";
+                                echo "<td>".$user_data['bairro']."</td>";
+                                echo "<td>".$user_data['cep']."</td>";
+                                echo "<td>".$user_data['uf']."</td>";
+                                echo "<td>".$user_data['fone']."</td>";
+                                echo "<td class='edit'><button onclick='editarUsuario($cod)' id=".$cod." ><img src='./images/lapis.svg' alt='lapis'></button></td>";
+                                echo "</tr>";
+                             }// else {
+                            //     echo "entrou no else do segundo if";
+                            //     echo "<tr>";
+                            //     echo "<td colspan=9 style='text-align: center;'> Nenhum registro encontrado! </td>";
+                            //     echo "</tr>";
+                            //     $executou = false;
+                            // }  
+                        } 
+                    }  else {
+                        echo "entrou no else do segundo if";
                         echo "<tr>";
-                        echo "<td colspan=9 style='text-align: center;'> Nenhum registro encontrado!</td>";
+                        echo "<td colspan=9 style='text-align: center;'> Nenhum registro encontrado! </td>";
                         echo "</tr>";
-                    }
+                    }       
                 ?>
             </tbody>
             
@@ -153,6 +202,7 @@
         })
     })
 
+
     //Logica para editar informações
     async function editarUsuario(cod, e) {
         var modal = document.getElementById("modal")
@@ -178,6 +228,11 @@
     function gerarPdf() {
         window.location.href= "gerarPdf.php"
     }
+
+    //Desaparecer mensagem 
+    $(document).ready(function(){
+        $("#msg").delay(4000).fadeOut("slow")
+    })
 
 </script>
 </html>

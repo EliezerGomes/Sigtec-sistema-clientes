@@ -49,13 +49,11 @@ header div > h3 {
 header div > a {
   width: 3.5rem;
   margin-right: 1.5rem;
-  border-radius: 5px;
   padding: .4rem;
   border: none;
   outline: none;
   text-decoration: none;
-  background: #FFF;
-  color: #000080;
+  color: #FFF;
   font-weight: 600;
 
   display: flex;
@@ -178,7 +176,7 @@ main table td, table th {
 #modal {
     display: none;
     width: 30rem;
-    height: 20rem;
+    height: 17rem;
     position: fixed;
     margin: 0 auto;
     margin-top: 15rem;
@@ -189,16 +187,24 @@ main table td, table th {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #d9d9d9;
+    border: 3px solid #000;
+    background: #FFF;
 
     transition: all .2s;
 }
 
-#modal .header-div > h4{
-    display: flex;
-    position: absolute;
-    top: 0;
 
+#modal .header-div > h4{
+    position: absolute;
+    background: #000080;
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.4rem;
+    text-align: center;
+    margin-top: 0;
+    color: #FFF;
+    right: 0;
+    top: 0;
 }
 
 #modal .header-div button {
@@ -209,8 +215,14 @@ main table td, table th {
     align-items: center;
     justify-content: center;
     right: 10px;
-    top: 10px;
-    border: none;
+    top: 6px;
+    background: #DC143C;
+    cursor: pointer;
+    transition: filter .2s;
+}
+
+#modal .header-div button:hover {
+    filter: brightness(0.8);
 }
 
 #modal > .header-div > button > img{
@@ -225,13 +237,12 @@ main table td, table th {
 #modal .select {
     display: flex;
     flex-direction: column;
-    position: absolute;
-    right: 20px;
-    top: 130px;
+    margin-left: 17rem;
+    margin-top: -1.5rem;
 }
 
 #modal .select select {
-  margin-top: -0.4rem;
+  width: 10rem;
   outline: none;
   height: 1.3rem;
 }
@@ -241,7 +252,7 @@ main table td, table th {
     flex-direction: column;
     position: absolute;
     left: 20px;
-    top: 150px;
+    top: 121px;
 }
 
 #modal > .form > form > label {
@@ -253,13 +264,13 @@ main table td, table th {
     display: flex;
     flex-direction: row;
     position: absolute;
-    top: 50px;
+    width: 100%;
+    top: 35px;
     padding: 0 20px 0 20px;
 }
 
-#modal .sucesso {
-    background: #00FA9A;
-    border: 2px solid #2E8B57;
+#modal > .info > .info-direita {
+    margin-left: 3rem;
 }
 
 .form button {
@@ -270,12 +281,15 @@ main table td, table th {
     border: none;
     font-weight: bold;
     cursor: pointer;
+    background: #000080;
+    border-radius: 2px;
+    color: #FFF;
 
-    transition: background .2s;
+    transition: filter .2s;
 }
 
 .form button:hover {
-    background: #A9A9A9;
+    filter: brightness(0.8);
 }
 
 /*########## FOOTER #############*/

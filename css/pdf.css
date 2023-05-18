@@ -13,35 +13,61 @@ h2 {
     text-align: center;
 }
 
+/*Info empresa*/
+
+.info {
+    margin-top: -20px;
+    margin-bottom: 40px;
+}
+
+.paragrafo-empresa {
+    position: absolute;
+}
+
+.paragrafo-cnpj {
+    position: absolute;
+    right: 0;
+}
+
 /* Painel Resumo*/
 .resumo {
-    width: 1200px;
-    padding: 10px;
-    
+    margin-top: 20px;
 }
 
 .resumo > table {
-    width: 765px; 
-    margin-left: -25px;
+    border-collapse: collapse;
+    margin: 0 auto;
+    width: 730px;
 }
 
 .resumo > table td, table th{
-    border:2px solid #4F4F4F;
-    padding: 5px;
-    font-weight: 600;
+    border:1px solid #4F4F4F;
+    padding: 3px;
     background: #FFF;
 }
 
 /* Tabela principal*/
-.main {
-    margin-left: -15px;  
-}
 
 .main > table {
-    width: 765px; 
+    border-collapse: collapse;
+    width: 730px; 
 }
 
 .main > table td, table th {
-    border: 2px solid #4F4F4F;
+    border: 1px solid #4F4F4F;
+    padding: 3px;
+    background: #FFF;
+}
+
+/*Tabela footer*/
+.footer > table {
+    margin-top: 20px;
+    border-collapse: collapse;
+    width: 730px; 
+}
+
+.footer > table td, table th {
+    border: 1px solid #4F4F4F;
+    padding: 3px;
     background: #FFF;
 }

@@ -14,15 +14,26 @@ if(!isset($_SESSION)) {
 }
 
 $emp = $_SESSION['id'];
-$empresas = "SELECT * FROM empresa WHERE id_revenda = '$emp' ORDER BY codigo DESC";
-$result = $mysqli->query($empresas);
+$ativas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND bloqueado = 'N' AND isento = '0' ORDER BY codigo DESC";
+$bloqueadas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND bloqueado = 'S' ORDER BY codigo DESC";
+$isentas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND isento = '1' ORDER BY codigo DESC";
+$h = date("Y-m-d");
+$vencidas = "SELECT * FROM empresa WHERE id_revenda = '$emp' AND validade_licenca < '$h' ORDER BY codigo DESC";
+
+$a = $mysqli->query($ativas);
+$b = $mysqli->query($bloqueadas);
+$i = $mysqli->query($isentas);
+$v = $mysqli->query($vencidas);
 
 $men = "SELECT r.NOME, count(e.razao) as RAZAO, sum(r.MENSALIDADE) AS MENSALIDADE, sum(r.PRECO_SUGERIDO) AS BRUTO_APROX, (SUM(r.PRECO_SUGERIDO) - sum(r.MENSALIDADE)) AS LIQUIDO_APROX  FROM empresa e
     INNER JOIN revenda r
     ON e.id_revenda = r.ID
     WHERE e.bloqueado = 'N' and e.isento = 'N'
     group by r.nome";
-    $r = $mysqli->query($men);
+$r = $mysqli->query($men);
+
+$busca = "SELECT * from revenda WHERE ID = $emp";
+$cnpj = $mysqli->query($busca);
 
 //HTML
 $dados = "<!DOCTYPE html>";
@@ -38,51 +49,35 @@ $dados .= "<img src='http://localhost/sigtec/images/logo_horizontal.png' alt='lo
 $dados .= "<h4>data: ".$data."</h4>";
 // $dados .= "</header>";
 $dados .= "<h2>Relatório</h2>";
-$dados .= "<div class='resumo'>";
-$dados .=   "<table>";
-$dados .=       "<thead>";
-$dados .=           "<tr>";
-$dados .=               "<td>N° de Razão</td>";
-$dados .=               "<td>Total da mensalidade</td>";
-$dados .=               "<td>Total do valor bruto</td>";
-$dados .=               "<td>Total do valor liquido</td>";
-$dados .=           "</tr>";
-$dados .=       "</thead>";
-$dados .=    "<tbody>";
-while($data = mysqli_fetch_assoc($r)){
-    if($data['NOME'] == $_SESSION['nome']){
-        $dados .= "<tr>";
-        $dados .= "<td>".$data['RAZAO']."</td>";
-        $dados .= "<td>".$data['MENSALIDADE']." R$"."</td>";
-        $dados .= "<td>".$data['BRUTO_APROX']." R$"."</td>";
-        $dados .= "<td>".$data['LIQUIDO_APROX']." R$"."</td>";
-        $dados .= "</tr>";
-        };
-    } 
-$dados .=    "</tbody>";
-$dados .= "</table>";  
+
+$cnpj_revenda = mysqli_fetch_assoc($cnpj);
+
+$dados .= "<div class='info'>";
+$dados .=   "<p class='paragrafo-empresa'><strong>Empresa:</strong> ".$_SESSION['nome']."<p/>";
+$dados .=   "<p class='paragrafo-cnpj'><strong>Cnpj revenda:</strong> ".$cnpj_revenda['CNPJ']."</p>";
 $dados .= "</div>";
 
-$var = mysqli_fetch_assoc($result);
 //empresas ativas
-
 $dados .= "<div class='main'>";
 $dados .= "<h3>Empresas ativas</h3>";
-if($var['bloqueado'] == "N"){
+$ativas = 0;
 $dados .=   "<table";  
     $dados .= "<thead>";
         $dados .= "<th>CNPJ</th>";
         $dados .= "<th>Razão</th>";
-        $dados .= "<th>Enderço</th>";
+        $dados .= "<th>Endereço</th>";
         $dados .= "<th>Cidade</th>";
         $dados .= "<th>Bairro</th>";
         $dados .= "<th>Cep</th>";
         $dados .= "<th>UF</th>";
-        $dados .= "<th>Fone</th>";
+        //$dados .= "<th>Fone</th>";
     $dados .= "</thead>";
-   
-    while($user_data = mysqli_fetch_assoc($result)){
+   $num = $a->num_rows;
+   if($num > 0){
+    while($user_data = mysqli_fetch_assoc($a)){
+        if($user_data['bloqueado'] == "N" && $user_data['isento'] == '0'){
         $cod = $user_data['codigo'];
+        $ativas++;
         $dados .= "<tbody>";
         $dados .=   "<tr>";
         $dados .=       "<td>".$user_data['cnpj']."</td>";
@@ -92,16 +87,16 @@ $dados .=   "<table";
         $dados .=       "<td>".$user_data['bairro']."</td>";
         $dados .=       "<td>".$user_data['cep']."</td>";
         $dados .=       "<td>".$user_data['uf']."</td>";
-        $dados .=       "<td>".$user_data['fone']."</td>";
+        // $dados .=       "<td>".$user_data['fone']."</td>";
         $dados .=   "</tr>"; 
-        $dados .= "</tbody>"; 
-    }
-} else {
+        $dados .= "</tbody>";
+        } 
+}} else {
 $dados .=   "<table>";
 $dados .=       "<thead>";
 $dados .=           "<th>CNPJ</th>";
 $dados .=           "<th>Razão</th>";
-$dados .=           "<th>Enderço</th>";
+$dados .=           "<th>Endereço</th>";
 $dados .=           "<th>Cidade</th>";
 $dados .=           "<th>Bairro</th>";
 $dados .=           "<th>Cep</th>";
@@ -110,15 +105,8 @@ $dados .=           "<th>Fone</th>";
 $dados .=        "</thead>"; 
 
 $dados .= "<tbody>";
-$dados .=   "<tr>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
-$dados .=       "<td>0</td>";
+$dados .=   "<tr colspan=8 style='text-align: center;'>";
+$dados .=       "<td>Sem registro</td>";
 $dados .=   "</tr>"; 
 $dados .= "</tbody>";
 }
@@ -128,79 +116,120 @@ $dados .= "</div>";
 //empresas bloqueadas 
 $dados .= "<div class='main'>";
 $dados .= "<h3>Empresas bloquedas</h3>";
-if($var['bloqueado'] == "S"){
-$dados .=   "<table";  
+$bloqueadas = 0;
+$dados .=   "<table>";  
     $dados .= "<thead>";
         $dados .= "<th>CNPJ</th>";
         $dados .= "<th>Razão</th>";
-        $dados .= "<th>Enderço</th>";
+        $dados .= "<th>Endereço</th>";
         $dados .= "<th>Cidade</th>";
         $dados .= "<th>Bairro</th>";
         $dados .= "<th>Cep</th>";
         $dados .= "<th>UF</th>";
         $dados .= "<th>Fone</th>";
     $dados .= "</thead>";
-       
-    while($user_data = mysqli_fetch_assoc($result)){
-        $cod = $user_data['codigo'];
-        $dados .= "<tr>";
-        $dados .= "<td>".$user_data['cnpj']."</td>";
-        $dados .= "<td>".$user_data['razao']."</td>";
-        $dados .= "<td>".$user_data['endereco']."</td>";
-        $dados .= "<td>".$user_data['cidade']."</td>";
-        $dados .= "<td>".$user_data['bairro']."</td>";
-        $dados .= "<td>".$user_data['cep']."</td>";
-        $dados .= "<td>".$user_data['uf']."</td>";
-        $dados .= "<td>".$user_data['fone']."</td>";
-        $dados .= "</tr>";  
-    }
+
+    $num = $b->num_rows;
+    if($num > 0) {  
+        while($user_data = mysqli_fetch_assoc($b)){
+            if($user_data['bloqueadas'] == 'S'){
+                $cod = $user_data['codigo'];
+                $bloqueadas++;
+                $dados .= "<tbody>";
+                $dados .= "<tr>";
+                $dados .= "<td>".$user_data['cnpj']."</td>";
+                $dados .= "<td>".$user_data['razao']."</td>";
+                $dados .= "<td>".$user_data['endereco']."</td>";
+                $dados .= "<td>".$user_data['cidade']."</td>";
+                $dados .= "<td>".$user_data['bairro']."</td>";
+                $dados .= "<td>".$user_data['cep']."</td>";
+                $dados .= "<td>".$user_data['uf']."</td>";
+                $dados .= "<td>".$user_data['fone']."</td>";
+                $dados .= "</tr>"; 
+                $dados .= "</tbody>";
+            }   
+        }
 } else {
-    $dados .=   "<table>";
-    $dados .=       "<thead>";
-    $dados .=           "<th>CNPJ</th>";
-    $dados .=           "<th>Razão</th>";
-    $dados .=           "<th>Enderço</th>";
-    $dados .=           "<th>Cidade</th>";
-    $dados .=           "<th>Bairro</th>";
-    $dados .=           "<th>Cep</th>";
-    $dados .=           "<th>UF</th>";
-    $dados .=           "<th>Fone</th>";
-    $dados .=        "</thead>"; 
-    
+    $bloqueadas = 0;
     $dados .= "<tbody>";
     $dados .=   "<tr>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
+    $dados .=       "<td colspan=8 style='text-align: center;'>Sem registro</td>";
     $dados .=   "</tr>"; 
     $dados .= "</tbody>";
     }
-$dados .=  "</table>";
-$dados .= "</div>";
+    $dados .=  "</table>";
+    $dados .= "</div>";
 
 //empresas isentas 
 $dados .= "<div class='main'>";
 $dados .= "<h3>Empresas isentas</h3>";
-if($var['isento'] == 1){
+$isentas = 0;
 $dados .=   "<table";  
     $dados .= "<thead>";
         $dados .= "<th>CNPJ</th>";
         $dados .= "<th>Razão</th>";
-        $dados .= "<th>Enderço</th>";
+        $dados .= "<th>Endereço</th>";
         $dados .= "<th>Cidade</th>";
         $dados .= "<th>Bairro</th>";
         $dados .= "<th>Cep</th>";
         $dados .= "<th>UF</th>";
         $dados .= "<th>Fone</th>";
     $dados .= "</thead>";
-       
-    while($user_data = mysqli_fetch_assoc($result)){
+    $num = $i->num_rows;
+    if($num > 0){
+        while($user_data = mysqli_fetch_assoc($i)){
+            if($user_data['isento'] == '1'){
+                $cod = $user_data['codigo'];
+                $isentas++;
+                $dados .= "<tr>";
+                $dados .= "<td>".$user_data['cnpj']."</td>";
+                $dados .= "<td>".$user_data['razao']."</td>";
+                $dados .= "<td>".$user_data['endereco']."</td>";
+                $dados .= "<td>".$user_data['cidade']."</td>";
+                $dados .= "<td>".$user_data['bairro']."</td>";
+                $dados .= "<td>".$user_data['cep']."</td>";
+                $dados .= "<td>".$user_data['uf']."</td>";
+                $dados .= "<td>".$user_data['fone']."</td>";
+                $dados .= "</tr>";
+            }
+             
+    }} else {
+        $isentas = 0;    
+        $dados .= "<tbody>";
+        $dados .=   "<tr>";
+        $dados .=       "<td colspan=8 style='text-align: center;'>Sem registro</td>";
+        $dados .=   "</tr>"; 
+        $dados .= "</tbody>";
+}
+$dados .=  "</table>";
+$dados .= "</div>";
+
+//empresas vencidas
+
+$hoje = date('Y-m-d');
+$dados .= "<div class='main'>";
+$dados .= "<h3>Empresas Vencidas</h3>";
+
+$vencidas = 0;
+$dados .=   "<table";  
+    $dados .= "<thead>";
+        $dados .= "<th>CNPJ</th>";
+        $dados .= "<th>Razão</th>";
+        $dados .= "<th>Endereço</th>";
+        $dados .= "<th>Cidade</th>";
+        $dados .= "<th>Bairro</th>";
+        $dados .= "<th>Cep</th>";
+        $dados .= "<th>UF</th>";
+        $dados .= "<th>Fone</th>";
+    $dados .= "</thead>";
+
+    $num= $v->num_rows;
+    if($num > 0){  
+    while($user_data = mysqli_fetch_assoc($v)){
+        $vencimento = $user_data['validade_licenca'];
+        if(strtotime($hoje) > strtotime($vencimento)){
         $cod = $user_data['codigo'];
+        $vencidas++;
         $dados .= "<tr>";
         $dados .= "<td>".$user_data['cnpj']."</td>";
         $dados .= "<td>".$user_data['razao']."</td>";
@@ -211,95 +240,58 @@ $dados .=   "<table";
         $dados .= "<td>".$user_data['uf']."</td>";
         $dados .= "<td>".$user_data['fone']."</td>";
         $dados .= "</tr>";  
+        }
     }
 } else {
-    $dados .=   "<table>";
-    $dados .=       "<thead>";
-    $dados .=           "<th>CNPJ</th>";
-    $dados .=           "<th>Razão</th>";
-    $dados .=           "<th>Enderço</th>";
-    $dados .=           "<th>Cidade</th>";
-    $dados .=           "<th>Bairro</th>";
-    $dados .=           "<th>Cep</th>";
-    $dados .=           "<th>UF</th>";
-    $dados .=           "<th>Fone</th>";
-    $dados .=        "</thead>"; 
-    
+    $vencidas = 0;
     $dados .= "<tbody>";
     $dados .=   "<tr>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
+    $dados .=       "<td colspan=8 style='text-align: center;'>Sem registro</td>";
     $dados .=   "</tr>"; 
     $dados .= "</tbody>";
     }
 $dados .=  "</table>";
 $dados .= "</div>";
 
-//empresas vencidas
-$vencimento = $var['validade_licenca'];
-$hoje = date('Y-m-d');
-$dados .= "<div class='main'>";
-$dados .= "<h3>Empresas isentas</h3>";
-if(strtotime($hoje) > strtotime($vencimento)){
-$dados .=   "<table";  
-    $dados .= "<thead>";
-        $dados .= "<th>CNPJ</th>";
-        $dados .= "<th>Razão</th>";
-        $dados .= "<th>Enderço</th>";
-        $dados .= "<th>Cidade</th>";
-        $dados .= "<th>Bairro</th>";
-        $dados .= "<th>Cep</th>";
-        $dados .= "<th>UF</th>";
-        $dados .= "<th>Fone</th>";
-    $dados .= "</thead>";
-       
-    while($user_data = mysqli_fetch_assoc($result)){
-        $cod = $user_data['codigo'];
+//Resumo
+$dados .= "<div class='resumo'>";
+$dados .=   "<table>";
+$dados .=       "<thead>";
+$dados .=           "<tr>";
+$dados .=               "<td><strong>Total de empresas ativas</strong></td>";
+$dados .=               "<td><strong>Total de empresas bloqueadas</strong></td>";
+$dados .=               "<td><strong>Total de empresas isentas</strong></td>";
+$dados .=               "<td><strong>Total de empresas vencidas</strong></td>";
+$dados .=           "</tr>";
+$dados .=       "</thead>";
+$dados .=    "<tbody>";
+while($data = mysqli_fetch_assoc($r)){
+    if($data['NOME'] == $_SESSION['nome']){
+        $total_mensalidade = $data['MENSALIDADE'];
         $dados .= "<tr>";
-        $dados .= "<td>".$user_data['cnpj']."</td>";
-        $dados .= "<td>".$user_data['razao']."</td>";
-        $dados .= "<td>".$user_data['endereco']."</td>";
-        $dados .= "<td>".$user_data['cidade']."</td>";
-        $dados .= "<td>".$user_data['bairro']."</td>";
-        $dados .= "<td>".$user_data['cep']."</td>";
-        $dados .= "<td>".$user_data['uf']."</td>";
-        $dados .= "<td>".$user_data['fone']."</td>";
-        $dados .= "</tr>";  
-    }
-} else {
-    $dados .=   "<table>";
-    $dados .=       "<thead>";
-    $dados .=           "<th>CNPJ</th>";
-    $dados .=           "<th>Razão</th>";
-    $dados .=           "<th>Enderço</th>";
-    $dados .=           "<th>Cidade</th>";
-    $dados .=           "<th>Bairro</th>";
-    $dados .=           "<th>Cep</th>";
-    $dados .=           "<th>UF</th>";
-    $dados .=           "<th>Fone</th>";
-    $dados .=        "</thead>"; 
-    
-    $dados .= "<tbody>";
-    $dados .=   "<tr>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=       "<td>0</td>";
-    $dados .=   "</tr>"; 
-    $dados .= "</tbody>";
-    }
-$dados .=  "</table>";
+        $dados .= "<td>".$data['RAZAO']."</td>";
+        $dados .= "<td>".$bloqueadas."</td>";
+        $dados .= "<td>".$isentas."</td>";
+        $dados .= "<td>".$vencidas."</td>";
+        $dados .= "</tr>";
+        };
+    } 
+$dados .=    "</tbody>";
+$dados .= "</table>"; 
 $dados .= "</div>";
+
+//Total mensalidade
+$dados .= "<div class='footer'>";
+$dados .=   "<table>";
+$dados .=       "<thead>";
+$dados .=           "<tr>";
+$dados .=               "<td style='text-align: center;'><strong>Total da mensalidade</strong></td>";
+$dados .=               "<td style='text-align: center;'>".$total_mensalidade." R$</td>";
+$dados .=           "</tr>";
+$dados .=       "</thead>";
+$dados .=   "</table>";
+$dados .= "</div>";
+
 $dados .= "</body>";
 
 $dompdf->loadHtml($dados);
